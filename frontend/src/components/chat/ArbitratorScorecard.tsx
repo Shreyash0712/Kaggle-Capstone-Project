@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Trophy, AlertTriangle, Activity, Scale } from 'lucide-react';
+import { X, AlertTriangle, Activity, Scale } from 'lucide-react';
 
 interface ScorecardProps {
   isOpen: boolean;
