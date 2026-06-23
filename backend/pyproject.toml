@@ -1,0 +1,27 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "apscheduler>=3.11.2",
+    "duckduckgo-search>=8.1.1",
+    "fastapi>=0.138.0",
+    "fastapi-mail>=1.6.5",
+    "httpx>=0.28.1",
+    "langchain-core>=1.4.8",
+    "langchain-google-genai>=4.2.5",
+    "langchain-groq>=1.1.3",
+    "langgraph>=1.2.6",
+    "bcrypt>=4.0.0",
+    "psycopg2-binary>=2.9.12",
+    "pydantic-settings>=2.14.2",
+    "python-jose[cryptography]>=3.5.0",
+    "python-multipart>=0.0.32",
+    "sqlalchemy>=2.0.51",
+    "tavily-python>=0.7.26",
+    "uvicorn>=0.49.0",
+    "pillow>=12.2.0",
+    "cloudinary>=1.44.2",
+]
