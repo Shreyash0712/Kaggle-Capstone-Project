@@ -1,0 +1,51 @@
+name: Sync Backend to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to HF Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+        run: |
+          if [ -z "$HF_TOKEN" ] || [ -z "$HF_USERNAME" ] || [ -z "$HF_SPACE_NAME" ]; then
+            echo "Error: Missing required secrets. Please set HF_TOKEN, HF_USERNAME, and HF_SPACE_NAME in GitHub settings."
+            exit 1
+          fi
+
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          
+          # Clone the HF Space repo to a temporary directory
+          git clone https://$HF_USERNAME:$HF_TOKEN@huggingface.co/spaces/$HF_USERNAME/$HF_SPACE_NAME /tmp/hf_space
+          
+          # Navigate to the HF Space directory
+          cd /tmp/hf_space
+          
+          # Remove all existing files to ensure a clean sync (excluding .git)
+          find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} +
+          
+          # Copy the backend files from the GitHub workspace
+          cp -r $GITHUB_WORKSPACE/backend/* .
+          
+          # Make sure hidden files like .env.example are also copied if needed
+          # (Docker handles .env mostly, but HF space might need everything in backend)
+          cp -r $GITHUB_WORKSPACE/backend/.env.example . || true
+          
+          # Commit and push
+          git add .
+          git commit -m "Auto-deploy backend from GitHub Actions" || echo "No changes to commit"
+          git push origin main

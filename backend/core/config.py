@@ -29,6 +29,14 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int
     DATABASE_URL: str
     
+    # Neon PostgreSQL Database (Optional)
+    PGHOST: Optional[str] = None
+    PGDATABASE: Optional[str] = None
+    PGUSER: Optional[str] = None
+    PGPASSWORD: Optional[str] = None
+    PGSSLMODE: Optional[str] = None
+    PGCHANNELBINDING: Optional[str] = None
+    
     # Auth configuration
     SECRET_KEY: str
     ALGORITHM: str
@@ -58,6 +66,18 @@ class Settings(BaseSettings):
     )
     
     def get_database_url(self) -> str:
+        # Check if Neon variables are provided
+        if self.PGHOST and self.PGUSER and self.PGPASSWORD and self.PGDATABASE:
+            url = f"postgresql://{self.PGUSER}:{self.PGPASSWORD}@{self.PGHOST}/{self.PGDATABASE}"
+            options = []
+            if self.PGSSLMODE:
+                options.append(f"sslmode={self.PGSSLMODE}")
+            if self.PGCHANNELBINDING:
+                options.append(f"channel_binding={self.PGCHANNELBINDING}")
+            if options:
+                url += "?" + "&".join(options)
+            return url
+            
         if self.DATABASE_URL:
             return self.DATABASE_URL
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
