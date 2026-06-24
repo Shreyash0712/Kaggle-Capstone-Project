@@ -4,8 +4,6 @@ import { AppLayout } from './components/layout/AppLayout';
 import { ChatInterface } from './components/chat/ChatInterface';
 import { AuthModal } from './components/auth/AuthModal';
 import { OAuthCallback } from './pages/OAuthCallback';
-import { VerifyEmail } from './pages/VerifyEmail';
-import { ResetPassword } from './pages/ResetPassword';
 import { useAuth } from './context/AuthContext';
 import './index.css';
 
@@ -21,8 +19,6 @@ const AppContent: React.FC = () => {
           <Route path="/chat/:sessionId" element={<ChatInterface />} />
           <Route path="/auth/callback/google" element={<OAuthCallback />} />
           <Route path="/auth/callback/github" element={<OAuthCallback />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </AppLayout>
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />

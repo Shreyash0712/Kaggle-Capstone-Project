@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 export interface User {
   email: string;
   auth_provider: string;
-  is_verified: boolean;
   name?: string | null;
   avatar_url?: string | null;
 }

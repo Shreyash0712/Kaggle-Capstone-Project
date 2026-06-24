@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks, Request, UploadFile, File
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from typing import Optional
 import httpx
@@ -15,9 +15,8 @@ cloudinary.config(secure=True)
 
 from db.database import get_db
 from db.models import User
-from auth.schemas import UserCreate, UserResponse, UserLogin, Token, UserNameUpdate, ForgotPasswordRequest, ResetPasswordRequest
-from auth.security import verify_password, get_password_hash, create_access_token, create_verification_token, verify_token, create_reset_token
-from auth.email import send_verification_email, send_reset_password_email
+from auth.schemas import UserResponse, Token, UserNameUpdate
+from auth.security import create_access_token, verify_token
 from core.config import settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -46,11 +45,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         user.avatar_url = payload.get("avatar_url")
     return user
 
-def get_current_active_user(current_user: User = Depends(get_current_user)):
-    if not current_user.is_verified:
-        raise HTTPException(status_code=400, detail="Inactive user (email not verified)")
-    return current_user
-
 # Optionally get current user (for endpoints that allow both auth and unauth)
 def get_optional_user(request: Request, db: Session = Depends(get_db)):
     auth_header = request.headers.get("Authorization")
@@ -62,80 +56,6 @@ def get_optional_user(request: Request, db: Session = Depends(get_db)):
         return user
     except HTTPException:
         return None
-
-@router.post("/register", response_model=UserResponse)
-async def register(user_in: UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == user_in.email).first()
-    if user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    hashed_password = get_password_hash(user_in.password)
-    new_user = User(
-        email=user_in.email,
-        hashed_password=hashed_password,
-        auth_provider="email",
-        is_verified=False
-    )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    
-    token = create_verification_token(new_user.email)
-    background_tasks.add_task(send_verification_email, new_user.email, token)
-    
-    return new_user
-
-@router.post("/login", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == form_data.username).first()
-    if not user or not user.hashed_password:
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
-    if not verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
-    
-    access_token = create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
-
-@router.get("/verify-email")
-def verify_email(token: str, db: Session = Depends(get_db)):
-    payload = verify_token(token)
-    if not payload or payload.get("type") != "verification":
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
-    
-    email = payload.get("sub")
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    user.is_verified = True
-    db.commit()
-    return {"message": "Email verified successfully"}
-
-@router.post("/forgot-password")
-async def forgot_password(req: ForgotPasswordRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == req.email).first()
-    if not user:
-        # To prevent email enumeration, return success even if user doesn't exist
-        return {"message": "If that email is registered, a password reset link has been sent."}
-    
-    token = create_reset_token(user.email)
-    background_tasks.add_task(send_reset_password_email, user.email, token)
-    return {"message": "If that email is registered, a password reset link has been sent."}
-
-@router.post("/reset-password")
-def reset_password(req: ResetPasswordRequest, db: Session = Depends(get_db)):
-    payload = verify_token(req.token)
-    if not payload or payload.get("type") != "reset":
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
-        
-    email = payload.get("sub")
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-        
-    user.hashed_password = get_password_hash(req.new_password)
-    db.commit()
-    return {"message": "Password reset successfully"}
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):

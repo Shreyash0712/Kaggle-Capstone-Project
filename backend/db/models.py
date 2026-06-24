@@ -15,9 +15,7 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     name = Column(String, nullable=True)
     avatar_url = Column(String, nullable=True)
-    hashed_password = Column(String, nullable=True) # Null for OAuth users
-    auth_provider = Column(String, default="email") # email, google, github
-    is_verified = Column(String, default="False") # String for simplicity, or boolean if preferred. Actually Boolean is better.
+    auth_provider = Column(String, default="google") # google, github
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     sessions = relationship("DecisionSession", back_populates="user", cascade="all, delete")
