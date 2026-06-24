@@ -133,7 +133,7 @@ async def google_callback(code: str, db: Session = Depends(get_db)):
         
         user = db.query(User).filter(User.email == email).first()
         if not user:
-            user = User(email=email, auth_provider="google", is_verified=True)
+            user = User(email=email, auth_provider="google")
             db.add(user)
             db.commit()
             db.refresh(user)
@@ -191,7 +191,7 @@ async def github_callback(code: str, db: Session = Depends(get_db)):
             
         user = db.query(User).filter(User.email == primary_email).first()
         if not user:
-            user = User(email=primary_email, auth_provider="github", is_verified=True)
+            user = User(email=primary_email, auth_provider="github")
             db.add(user)
             db.commit()
             db.refresh(user)
