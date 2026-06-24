@@ -19,7 +19,7 @@ The core of Aletheox is the multi-agent debate system, orchestrated using **Lang
 1.  **The Advocate (The Proponent):** Takes the user's premise and constructs compelling, logically sound arguments highlighting potential benefits. It is strictly constrained by a zero-hallucination policy and grounded in real-world facts.
 2.  **The Challenger (The Skeptic):** Pressure-tests the premise by identifying hidden risks, structural flaws, and opportunity costs. It acts as a grounded risk-manager, avoiding blind pessimism.
 3.  **The Detective (The Context Gatherer):** Runs in parallel to identify missing context. If variables are unknown, the Detective halts the debate and asks the user specifically targeted questions to eliminate ambiguity.
-4.  **The Arbitrator (The Judge):** Acts as the final authority using an LLM-as-a-judge approach. It reviews the full transcript, weighs the arguments of the Advocate and Challenger, factors in the Detective's context, and delivers a definitive verdict (Proceed, Pivot, or Abandon).
+4.  **The Arbitrator (The Judge):** Uses an LLM-as-a-judge approach. Rather than waiting until the end, it runs continuously with each iteration of the debate. It actively scores the Advocate and Challenger based on the strength of their arguments and generates a dynamic "Scorecard," allowing the user to view the shifting verdict (Proceed, Pivot, or Abandon) at any time.
 
 ### Tools Used
 *   **Tavily Search:** An external API provided to the Advocate and Challenger, allowing them to search the web in real-time. This ensures that arguments regarding salaries, benchmarks, or modern trends are completely factual.
