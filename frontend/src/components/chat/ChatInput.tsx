@@ -39,7 +39,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSend, onArbitratorClick,
   };
 
   return (
-    <div className="p-4 sm:p-6 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)] to-transparent sticky bottom-0 w-full flex justify-center">
+    <div 
+      className="p-4 sm:p-6 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)] to-transparent sticky bottom-0 w-full flex justify-center"
+      style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+    >
       <div className="w-full max-w-4xl relative flex items-end gap-2">
         <form 
           onSubmit={handleSubmit}
